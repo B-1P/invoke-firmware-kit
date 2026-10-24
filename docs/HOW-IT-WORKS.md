@@ -37,13 +37,15 @@ by case, which a Windows or default macOS disk would merge.
 | File | Change |
 |---|---|
 | `etc/podium/podium.conf` | Don't start the `wifi-blocker` service. |
-| `init.rc` | Start the AirPlay service and the boot hook after Harman's app. With `--no-ssh`, don't start the SSH server. |
+| `init.rc` | Start the AirPlay service, the boot hook and Wi-Fi onboarding after Harman's app. With `--no-ssh`, don't start the SSH server. |
 | `usr/sbin/firewall.sh` | Allow AirPlay (TCP 5000, UDP 6001–6010); allow SSH unless `--no-ssh`; with `--control-bus`, allow ports 9998/9999. |
 | `etc/shadow` | Root password (SHA-512 hash of the one you chose). |
 | `usr/bin/shairport-sync`, `usr/lib/airplay/` | The AirPlay receiver and its private copies of OpenSSL, libconfig and popt. |
 | `usr/bin/airplay-run.sh` | Pipes the receiver's audio into the speaker's own `aplay`, on the stock `music` output, so it mixes with other sounds. |
 | `etc/shairport-sync.conf` | AirPlay name and ports. |
 | `usr/bin/data-hooks.sh` | Runs `/data/boot.d/*.sh` at boot. |
+| `usr/share/onboarding/`, `usr/bin/onboarding` | Wi-Fi onboarding: if Wi-Fi doesn't come up, opens the `Invoke-Setup-XXXX` network (hostapd on `p2p0`, dnsmasq) with a setup page (Python). Uses only programs already in the firmware. See WIFI-SETUP.md. |
+| `sbin/wpa_supplicant_setup.sh` | At boot, use the network saved through the setup page (`/data/onboarding/wpa_supplicant.conf`) when there is one. |
 | `etc/wpa_supplicant.conf.in`, `system/etc/wpa_supplicant.conf.in` | With `--wifi`, your network (the password is stored as a derived WPA key). The speaker copies this file into place at every boot. |
 
 ## Why AirPlay is wired this way

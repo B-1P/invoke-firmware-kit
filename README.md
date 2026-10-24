@@ -5,7 +5,9 @@ useful network speaker:
 
 - **AirPlay** receiver, so it shows up in the AirPlay picker on iPhone, iPad,
   Mac and in apps like Spotify.
-- **Wi-Fi** works again.
+- **Wi-Fi** works again, with a **setup page**: if the speaker can't get
+  online, it opens its own `Invoke-Setup-XXXX` network where you pick your
+  Wi-Fi from your phone.
 - **SSH** access as root, with a password you choose.
 - A **boot hook** (`/data/boot.d/`) for your own scripts, changeable over SSH
   without reflashing.
@@ -51,11 +53,10 @@ These steps are for WSL; on Linux or macOS, skip step 1.
    ```
 3. Run the build:
    ```sh
-   ./build.sh --wifi
+   ./build.sh
    ```
    It downloads Harman's package (about 280 MB) and the build tools (about
-   1 GB) on the first run, asks for a root password and your Wi-Fi details,
-   then compiles and assembles the image. Expect 10–20 minutes the first time.
+   1 GB) on the first run, asks for a root password, then compiles and assembles the image. Expect 10–20 minutes the first time.
 
 When it finishes, it prints the location of **`out/Invoke-flash`** (and the
 Windows path to it when run in WSL). That folder is Harman's OTA2 package with
@@ -65,7 +66,7 @@ your custom firmware already in place.
 
 | Option | Effect |
 |---|---|
-| `--wifi` | Ask for a Wi-Fi network to preset in the image. Recommended: the speaker has no other way to join Wi-Fi yet. |
+| `--wifi` | Ask for a Wi-Fi network to preset in the image, so you can skip the setup page. Don't share an image built with this: it contains your Wi-Fi key. |
 | `--airplay-name NAME` | Name shown in AirPlay pickers (default `Invoke`). |
 | `--no-ssh` | Keep SSH closed. |
 | `--control-bus` | Open Harman's internal message bus (ports 9998/9999) to your network, for Home Assistant experiments. It has **no authentication**, so only use it on a trusted network. |
@@ -81,8 +82,12 @@ USB driver once, put the speaker in flashing mode, run `run.bat` from the
 
 ## After flashing
 
-- **Network:** the speaker joins the Wi-Fi you entered. Find its IP address
-  in your router's list of devices; its hostname is `harman`. Reserving that
+- **Wi-Fi:** about a minute after power-on, the speaker opens a Wi-Fi
+  network called `Invoke-Setup-XXXX`. Join it from your phone, pick your
+  network on the page that opens and enter its password. Details, and how
+  to change networks later, are in [docs/WIFI-SETUP.md](docs/WIFI-SETUP.md).
+  (Built with `--wifi`, it joins your network directly.)
+- **Network:** find the speaker's IP address in your router's list of devices; its hostname is `harman`. Reserving that
   address in your router's DHCP settings is a good idea.
 - **AirPlay:** pick the name you chose (default **Invoke**) as the output on
   your phone or Mac.
@@ -107,8 +112,9 @@ USB driver once, put the speaker in flashing mode, run `run.bat` from the
 ## Known limitations
 
 - AirPlay 1 only (not AirPlay 2 multi-room).
-- No Wi-Fi setup screen yet: use `--wifi` at build time. To change networks
-  later, rebuild with `--wifi` and reflash.
+- Wi-Fi setup needs WPA2 or open networks; WPA3-only and enterprise
+  (802.1X) networks don't work. Routers that isolate devices from each other
+  (common on guest and some 5 GHz networks) make the speaker unreachable.
 - SSH key login doesn't work; password login does.
 
 ## Restoring stock firmware

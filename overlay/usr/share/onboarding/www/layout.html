@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+{{HEAD}}
+<style>
+  :root { --bg:#f4f4f6; --card:#fff; --fg:#1c1c1e; --muted:#6e6e73; --accent:#0a66d8;
+          --line:#d9d9de; --err-bg:#fdecea; --err:#a1261b; --note-bg:#eaf2fd; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111113; --card:#1c1c1f; --fg:#f2f2f5; --muted:#a0a0a8; --accent:#4c9bff;
+            --line:#34343a; --err-bg:#3b1715; --err:#ffb4aa; --note-bg:#14263d; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:16px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width:30rem; margin:0 auto; padding:16px; }
+  header { padding:8px 0 4px; }
+  header h1 { font-size:1.35rem; margin:0; }
+  header p { margin:2px 0 0; color:var(--muted); font-size:.9rem; }
+  .card { background:var(--card); border-radius:14px; padding:16px; margin-top:12px; }
+  h2 { font-size:1rem; margin:18px 0 8px; }
+  h2:first-child { margin-top:0; }
+  .list { border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  label.net { display:flex; align-items:center; gap:10px; padding:11px 12px;
+              border-bottom:1px solid var(--line); cursor:pointer; }
+  label.net:last-of-type { border-bottom:0; }
+  label.net.off { color:var(--muted); cursor:default; }
+  .ssid { flex:1; overflow-wrap:anywhere; }
+  .meta { color:var(--muted); font-size:.82rem; white-space:nowrap; }
+  input[type=text], input[type=password] { width:100%; font-size:16px; padding:11px 12px;
+         border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--fg); }
+  .list input[type=text] { border:0; border-top:1px solid var(--line); border-radius:0; }
+  input[type=radio], input[type=checkbox] { width:18px; height:18px; margin:0; }
+  label.small { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .small { font-size:.88rem; color:var(--muted); }
+  a { color:var(--accent); }
+  button { width:100%; margin-top:14px; padding:13px; font-size:1.05rem; font-weight:600;
+           border:0; border-radius:10px; background:var(--accent); color:#fff; }
+  .error { background:var(--err-bg); color:var(--err); padding:10px 12px; border-radius:10px; }
+  .note { background:var(--note-bg); padding:10px 12px; border-radius:10px; }
+  ul { padding-left:1.2rem; }
+  li { margin:6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Invoke Wi-Fi setup</h1>
+    <p>Speaker network: {{AP_SSID}}</p>
+  </header>
+  <div class="card">
+{{BODY}}
+  </div>
+</main>
+</body>
+</html>

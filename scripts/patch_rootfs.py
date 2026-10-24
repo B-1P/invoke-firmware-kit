@@ -65,13 +65,16 @@ def main():
 
     # Boot: start AirPlay and the /data boot hooks after the main app.
     replace_once(f("init.rc"), "    start podium\n",
-                 "    start podium\n    start shairport-sync\n    start data_hooks\n")
+                 "    start podium\n    start shairport-sync\n    start data_hooks\n"
+                 "    start onboarding\n")
     if not s["ssh"]:
         replace_once(f("init.rc"), "    start sshd\n", "    #start sshd\n")
     with open(f("init.rc"), "a") as out:
         out.write("\nservice shairport-sync /bin/logwrapper /bin/sh /usr/bin/airplay-run.sh\n"
                   "\nservice data_hooks /bin/sh /usr/bin/data-hooks.sh\n"
-                  "    oneshot\n    disabled\n")
+                  "    oneshot\n    disabled\n"
+                  "\nservice onboarding /bin/sh /usr/share/onboarding/onboarding.sh boot\n"
+                  "    user root\n    oneshot\n    disabled\n")
 
     # Firewall: allow AirPlay, plus SSH and the message bus if requested.
     rules = ["# AirPlay: RTSP control + RTP audio/control/timing",
@@ -112,6 +115,29 @@ def main():
                   '\tdrift_tolerance_in_seconds = 0.002;\n};\n\n'
                   'sessioncontrol = {\n\tallow_session_interruption = "yes";\n};\n' % name)
     os.chmod(conf, 0o644)
+
+    # Wi-Fi onboarding: opens a setup network with a web page when Wi-Fi
+    # doesn't come up. Networks saved there live on /data and replace the
+    # firmware's default config on every boot.
+    onb = os.path.join(overlay, "usr/share/onboarding")
+    for rel, mode in (("onboarding.sh", 0o755), ("portal.py", 0o644),
+                      ("onboarding.conf", 0o644), ("www/layout.html", 0o644)):
+        put(os.path.join(onb, rel), f("usr/share/onboarding/" + rel), mode)
+    for d in ("usr/share/onboarding", "usr/share/onboarding/www"):
+        os.chmod(f(d), 0o755)
+    link = f("usr/bin/onboarding")
+    if os.path.lexists(link):
+        os.remove(link)
+    os.symlink("../share/onboarding/onboarding.sh", link)
+    replace_once(f("sbin/wpa_supplicant_setup.sh"),
+                 "\nchmod 0600 ${CONFIG_FILE}\n",
+                 "\n# Wi-Fi onboarding: a network saved through the setup page wins.\n"
+                 "ONB_SAVED=/data/onboarding/wpa_supplicant.conf\n"
+                 "if [ -s ${ONB_SAVED} ] && grep -q '^ctrl_interface=' ${ONB_SAVED}"
+                 " && grep -q '^network={' ${ONB_SAVED}; then\n"
+                 "  /bin/cat ${ONB_SAVED} > ${CONFIG_FILE}\n"
+                 "fi\n"
+                 "\nchmod 0600 ${CONFIG_FILE}\n")
 
     # Optional Wi-Fi network. The speaker copies this template into place
     # on every boot.
