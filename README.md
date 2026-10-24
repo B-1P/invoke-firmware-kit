@@ -101,6 +101,9 @@ USB driver once, put the speaker in flashing mode, run `run.bat` from the
   Assistant) can play LED animations and receive tap, volume and button
   events. See [docs/CONTROL-BUS.md](docs/CONTROL-BUS.md).
 
+- **Voice:** the microphones still work, but the Cortana wake word is
+  gone. Findings and options are in [docs/VOICE.md](docs/VOICE.md).
+
 ## Known limitations
 
 - AirPlay 1 only (not AirPlay 2 multi-room).
