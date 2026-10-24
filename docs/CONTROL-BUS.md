@@ -83,3 +83,27 @@ mic-mute button produced no bus events. The firmware contains the message
 speaker's volume, and the Bluetooth button does its normal job. Other
 listeners just receive a copy of each event; they can't block it. The tap is
 the cleanest control to repurpose.
+
+## Music sources
+
+Harman's `music-source-manager` tracks which player is active. Players
+register a URI (`com.harman.bluetooth`; the kit adds `com.harman.airplay`)
+and provide `<uri>.stop`, `.pause`, `.resume`, `.next` and `.prev`.
+
+| Procedure | Arguments | Effect |
+|---|---|---|
+| `com.harman.source.get-registered` | none | List of registered URIs |
+| `com.harman.source.get-active` | none | Active URI (`""` if none) |
+| `com.harman.source.start` | `[uri]` | Make `uri` active; calls `<previous>.stop` |
+| `com.harman.music.pause` / `.resume` / `.stop` / `.next` / `.prev` | none | Forwarded to `<active>.pause` etc. |
+| `com.harman.source.nowPlayingUpdate` | `[uri]`, named `state` (`playing`/`paused`/`stopped`), optional `title`, `artist`, `album`, `duration`, `position`, `service` | Only accepted from the active source; published as `com.harman.music.stateChanged` |
+
+Confirmed on a speaker: `source.start` calls the previous source's `.stop`,
+`music.pause` reaches the active source's `.pause`, and `nowPlayingUpdate`
+publishes `stateChanged` with the named arguments. Harman's own test suite for
+this is in `/home/root/tests/` on the speaker.
+
+On the speaker itself, `/usr/bin/test-wamp-client` can call (`-c`), provide
+(`-p`), subscribe (`-s`) and publish (`-n`); arguments are
+`{"pos_args":[...],"nam_args":{...}}`.
+

@@ -42,9 +42,10 @@ by case, which a Windows or default macOS disk would merge.
 | `etc/dropbear/`, `init.rc` | SSH host keys made fresh for each build, replacing the key Harman shipped on every speaker. |
 | `usr/sbin/firewall.sh` (continued) | Drop everything not listed (Harman left the final drop commented out, which exposed ADB on port 5555 as root without a password, and Libre's services). Replies to the speaker's own connections are still accepted. Harman's debug flag no longer opens SSH and the control bus by itself, and Cortana's old setup ports (443, 12345, 48301) are closed. |
 | `etc/shadow` | Root password (SHA-512 hash of the one you chose). |
-| `usr/bin/shairport-sync`, `usr/lib/airplay/` | The AirPlay receiver and its private copies of OpenSSL, libconfig and popt. |
+| `usr/bin/shairport-sync`, `usr/lib/airplay/` | The AirPlay receiver and its private copies of OpenSSL, libconfig and popt. It announces itself through the speaker's own mDNS daemon (`mdnsd`), falling back to its built-in announcer. |
 | `usr/bin/airplay-run.sh` | Pipes the receiver's audio into the speaker's own `aplay`, on the stock `music` output, so it mixes with other sounds. |
-| `etc/shairport-sync.conf` | AirPlay name and ports. |
+| `etc/shairport-sync.conf` | AirPlay name, ports, and hooks that report play state. |
+| `usr/bin/airplay-source.sh` | Registers AirPlay with Harman's music-source-manager as `com.harman.airplay`, so AirPlay and Bluetooth take turns and a tap on the top ends the AirPlay session. |
 | `usr/bin/data-hooks.sh` | Runs `/data/boot.d/*.sh` at boot. |
 | `usr/share/onboarding/`, `usr/bin/onboarding` | Wi-Fi onboarding: if Wi-Fi doesn't come up, opens the `Invoke-Setup-XXXX` network (hostapd on `p2p0`, dnsmasq) with a setup page (Python). Uses only programs already in the firmware. See WIFI-SETUP.md. |
 | `sbin/wpa_supplicant_setup.sh` | At boot, use the network saved through the setup page (`/data/onboarding/wpa_supplicant.conf`) when there is one. |
@@ -57,3 +58,12 @@ by case, which a Windows or default macOS disk would merge.
 - shairport-sync's ALSA output couldn't negotiate a format with Harman's audio
   chain, while the speaker's own `aplay` plays to it fine. So the receiver
   writes raw audio to stdout and `aplay` plays it.
+- AirPlay is announced through the speaker's `mdnsd` because it answers a
+  phone's first lookup directly. shairport-sync's built-in announcer only
+  multicasts, and on some Wi-Fi networks those multicasts never reach
+  phones and computers, so the speaker didn't show up. At build time
+  shairport-sync is linked against a placeholder with the name of Harman's
+  `libmdnssd.so`; nothing of Harman's is needed to compile it.
+- This build can't send play/pause to the phone (that needs DACP), so when
+  the speaker is asked to pause or stop AirPlay (a tap on the top, or
+  Bluetooth starting), it ends the AirPlay session.

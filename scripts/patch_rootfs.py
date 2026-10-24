@@ -143,7 +143,7 @@ def main():
     for lib in sorted(os.listdir(libdir)):
         put(os.path.join(libdir, lib), f("usr/lib/airplay/" + lib), 0o644)
     os.chmod(f("usr/lib/airplay"), 0o755)
-    for script in ("airplay-run.sh", "data-hooks.sh"):
+    for script in ("airplay-run.sh", "airplay-source.sh", "data-hooks.sh"):
         put(os.path.join(overlay, "usr/bin", script), f("usr/bin/" + script), 0o755)
     name = s["airplay_name"].replace("\\", "").replace('"', "")
     conf = f("etc/shairport-sync.conf")
@@ -151,7 +151,10 @@ def main():
         out.write('general = {\n\tname = "%s";\n\tport = 5000;\n'
                   '\tudp_port_base = 6001;\n\tudp_port_range = 10;\n'
                   '\tdrift_tolerance_in_seconds = 0.002;\n};\n\n'
-                  'sessioncontrol = {\n\tallow_session_interruption = "yes";\n};\n' % name)
+                  'sessioncontrol = {\n\tallow_session_interruption = "yes";\n'
+                  '\trun_this_before_play_begins = "/usr/bin/airplay-source.sh playing";\n'
+                  '\trun_this_after_play_ends = "/usr/bin/airplay-source.sh stopped";\n'
+                  '\twait_for_completion = "no";\n};\n' % name)
     os.chmod(conf, 0o644)
 
     # Wi-Fi onboarding: opens a setup network with a web page when Wi-Fi

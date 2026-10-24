@@ -11,6 +11,7 @@ ends up inside the image you build, for your own use.
 | OpenSSL 1.0.2 (`libssl1.0.0:armhf`) | Ubuntu 16.04 archive | OpenSSL / SSLeay license | Yes |
 | libconfig (`libconfig9:armhf`) | Ubuntu 16.04 archive | LGPL-2.1+ | Yes |
 | popt (`libpopt0:armhf`) | Ubuntu 16.04 archive | MIT | Yes |
+| Avahi's `dns_sd.h` compatibility header (`libavahi-compat-libdnssd-dev`) | Ubuntu 16.04 archive | LGPL-2.1+ (header of Apple's BSD-licensed API) | No (build only) |
 | GCC 4.9 ARM cross compiler, squashfs-tools and other build tools | Ubuntu 16.04 archive | GPL and others | No (build only) |
 
 The license texts ship with each source: in the shairport-sync source tree,

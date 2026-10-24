@@ -90,7 +90,9 @@ USB driver once, put the speaker in flashing mode, run `run.bat` from the
 - **Network:** find the speaker's IP address in your router's list of devices; its hostname is `harman`. Reserving that
   address in your router's DHCP settings is a good idea.
 - **AirPlay:** pick the name you chose (default **Invoke**) as the output on
-  your phone or Mac.
+  your phone or Mac. AirPlay and Bluetooth take turns: starting one stops the
+  other. A tap on the top ends the AirPlay session (the speaker can't pause
+  your phone, so it disconnects instead).
 - **SSH:**
   ```sh
   ssh root@<speaker-ip>

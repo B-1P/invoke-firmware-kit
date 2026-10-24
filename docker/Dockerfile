@@ -15,6 +15,7 @@ RUN dpkg --add-architecture armhf \
         build-essential autoconf automake libtool pkg-config \
         git ca-certificates \
         squashfs-tools unzip python3 dropbear-bin \
+        libavahi-compat-libdnssd-dev \
         libssl-dev:armhf libpopt-dev:armhf libconfig-dev:armhf \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf arm-linux-gnueabihf-gcc-4.9 /usr/bin/arm-linux-gnueabihf-gcc \
