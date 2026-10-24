@@ -97,6 +97,10 @@ USB driver once, put the speaker in flashing mode, run `run.bat` from the
   each script). `/data` survives reboots; the rest of the system is
   read-only.
 
+- **LED ring and buttons:** with `--control-bus`, other devices (e.g. Home
+  Assistant) can play LED animations and receive tap, volume and button
+  events. See [docs/CONTROL-BUS.md](docs/CONTROL-BUS.md).
+
 ## Known limitations
 
 - AirPlay 1 only (not AirPlay 2 multi-room).
