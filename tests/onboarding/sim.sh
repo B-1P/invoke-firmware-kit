@@ -80,7 +80,7 @@ request() {     # what the portal writes when the user presses Connect
     mv "$SIM/run/request.conf.tmp" "$SIM/run/request.conf"
 }
 
-ap_running() { [ -f "$SIM/run/ap_up" ] && [ -f "$SIM/fw_rule" ] && [ "$(cat "$SIM/p2p0_ip" 2>/dev/null)" = 192.168.4.1 ]; }
+ap_running() { [ -f "$SIM/run/ap_up" ] && [ "$(wc -l < "$SIM/fw_rules" 2>/dev/null)" -eq 5 ] && [ "$(cat "$SIM/p2p0_ip" 2>/dev/null)" = 192.168.4.1 ]; }
 
 echo "== shell under test: $SHELL_UNDER_TEST ($(readlink -f "$(command -v $SHELL_UNDER_TEST)"))"
 
@@ -102,7 +102,7 @@ request home rightpass
 check "boot command finishes after success" "wait_for '! kill -0 $BOOT 2>/dev/null' 30"
 check "credentials saved persistently" "grep -q 'ssid=$(hex home)' '$SIM/state/wpa_supplicant.conf'"
 check "saved label" "[ \"\$(cat $SIM/state/saved_ssid.txt)\" = home ]"
-check "setup network closed" "[ ! -f '$SIM/run/ap_up' ] && [ ! -f '$SIM/fw_rule' ] && [ ! -f '$SIM/p2p0_ip' ]"
+check "setup network closed" "[ ! -f '$SIM/run/ap_up' ] && [ ! -s '$SIM/fw_rules' ] && [ ! -f '$SIM/p2p0_ip' ]"
 check "fake daemons stopped" "! ls $SIM/run/*.pid >/dev/null 2>&1"
 check "connected with IP" "[ \"\$(cat $SIM/ip)\" = 10.0.0.5 ]"
 check "result ok for portal" "head -n 1 '$SIM/run/last_result' | grep -qx ok"
@@ -196,7 +196,7 @@ check "setup network up" "wait_for ap_running"
 check "status shows running" "onb status | grep -q 'setup mode : RUNNING (forced)'"
 onb stop > "$SIM/out" 2>&1
 check "stop works" "grep -q 'Setup mode stopped' '$SIM/out'"
-check "AP closed" "[ ! -f '$SIM/run/ap_up' ] && [ ! -f '$SIM/fw_rule' ]"
+check "AP closed" "[ ! -f '$SIM/run/ap_up' ] && [ ! -s '$SIM/fw_rules' ]"
 check "station reconnected" "[ \"\$(cat $SIM/wpastate)\" = COMPLETED ]"
 teardown
 
@@ -223,7 +223,7 @@ onb boot & BOOT=$!
 check "boot finishes" "wait_for '! kill -0 $BOOT 2>/dev/null' 60"
 check "gave up" "grep -q 'keeps failing, giving up' '$SIM/run/onboarding.log'"
 check "back on Wi-Fi" "[ \"\$(cat $SIM/wpastate)\" = COMPLETED ]"
-check "firewall rule removed" "[ ! -f '$SIM/fw_rule' ]"
+check "firewall rule removed" "[ ! -s '$SIM/fw_rules' ]"
 teardown
 
 echo "== 11. DHCP needs a kick: background retry and leaving setup mode"

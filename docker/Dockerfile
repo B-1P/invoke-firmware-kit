@@ -14,7 +14,7 @@ RUN dpkg --add-architecture armhf \
         binutils-arm-linux-gnueabihf \
         build-essential autoconf automake libtool pkg-config \
         git ca-certificates \
-        squashfs-tools unzip python3 \
+        squashfs-tools unzip python3 dropbear-bin \
         libssl-dev:armhf libpopt-dev:armhf libconfig-dev:armhf \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf arm-linux-gnueabihf-gcc-4.9 /usr/bin/arm-linux-gnueabihf-gcc \

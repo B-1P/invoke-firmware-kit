@@ -127,10 +127,14 @@ setprop)
         [ "$(cat "$SIM/wpastate")" = COMPLETED ] && echo 10.0.0.5 > "$SIM/ip" ;; esac ;;
 iptables)
     rec "$@"
-    case "$1" in
-        -C) [ -f "$SIM/fw_rule" ] ;;
-        -I) touch "$SIM/fw_rule" ;;
-        -D) [ -f "$SIM/fw_rule" ] && rm -f "$SIM/fw_rule" ;;
+    # rules live one per line in $SIM/fw_rules, without the -C/-I/-D
+    op=$1; shift; rule="$*"; touch "$SIM/fw_rules"
+    case "$op" in
+        -C) grep -qxF -- "$rule" "$SIM/fw_rules" ;;
+        -I) echo "$rule" >> "$SIM/fw_rules" ;;
+        -D) grep -qxF -- "$rule" "$SIM/fw_rules" || exit 1
+            awk -v r="$rule" '!d && $0 == r { d = 1; next } { print }' "$SIM/fw_rules" > "$SIM/fw_rules.new"
+            mv "$SIM/fw_rules.new" "$SIM/fw_rules" ;;
     esac ;;
 simsleep)
     # advance the fake clock instead of really waiting

@@ -93,7 +93,7 @@ USB driver once, put the speaker in flashing mode, run `run.bat` from the
   your phone or Mac.
 - **SSH:**
   ```sh
-  ssh -o HostKeyAlgorithms=+ssh-rsa root@<speaker-ip>
+  ssh root@<speaker-ip>
   ```
   Use the root password you chose. Key-based login doesn't work with the
   speaker's old SSH server; use the password.

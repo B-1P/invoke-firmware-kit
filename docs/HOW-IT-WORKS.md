@@ -39,6 +39,8 @@ by case, which a Windows or default macOS disk would merge.
 | `etc/podium/podium.conf` | Don't start the `wifi-blocker` service. |
 | `init.rc` | Start the AirPlay service, the boot hook and Wi-Fi onboarding after Harman's app. With `--no-ssh`, don't start the SSH server. |
 | `usr/sbin/firewall.sh` | Allow AirPlay (TCP 5000, UDP 6001–6010); allow SSH unless `--no-ssh`; with `--control-bus`, allow ports 9998/9999. |
+| `etc/dropbear/`, `init.rc` | SSH host keys made fresh for each build, replacing the key Harman shipped on every speaker. |
+| `usr/sbin/firewall.sh` (continued) | Drop everything not listed (Harman left the final drop commented out, which exposed ADB on port 5555 as root without a password, and Libre's services). Replies to the speaker's own connections are still accepted. Harman's debug flag no longer opens SSH and the control bus by itself, and Cortana's old setup ports (443, 12345, 48301) are closed. |
 | `etc/shadow` | Root password (SHA-512 hash of the one you chose). |
 | `usr/bin/shairport-sync`, `usr/lib/airplay/` | The AirPlay receiver and its private copies of OpenSSL, libconfig and popt. |
 | `usr/bin/airplay-run.sh` | Pipes the receiver's audio into the speaker's own `aplay`, on the stock `music` output, so it mixes with other sounds. |

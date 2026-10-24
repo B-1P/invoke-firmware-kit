@@ -12,6 +12,7 @@ build stops.
 import json
 import os
 import shutil
+import subprocess
 import sys
 
 
@@ -69,6 +70,25 @@ def main():
                  "    start onboarding\n")
     if not s["ssh"]:
         replace_once(f("init.rc"), "    start sshd\n", "    #start sshd\n")
+
+    # SSH host keys: every stock speaker shares Harman's /etc/rsa_host_key,
+    # so give this build its own keys instead.
+    keydir = f("etc/dropbear")
+    keys = []
+    for kind, bits in (("ecdsa", "256"), ("rsa", "2048")):
+        key = os.path.join(keydir, "dropbear_%s_host_key" % kind)
+        if os.path.exists(key):
+            os.remove(key)
+        subprocess.check_call(["dropbearkey", "-t", kind, "-s", bits, "-f", key],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        os.chmod(key, 0o600)
+        os.chown(key, 0, 0)
+        keys.append("-r /etc/dropbear/dropbear_%s_host_key" % kind)
+    replace_once(f("init.rc"), "/usr/sbin/dropbear -r /etc/rsa_host_key ",
+                 "/usr/sbin/dropbear %s " % " ".join(keys))
+    for rel in ("etc/rsa_host_key", "system/etc/rsa_host_key"):
+        if os.path.lexists(f(rel)):
+            os.remove(f(rel))
     with open(f("init.rc"), "a") as out:
         out.write("\nservice shairport-sync /bin/logwrapper /bin/sh /usr/bin/airplay-run.sh\n"
                   "\nservice data_hooks /bin/sh /usr/bin/data-hooks.sh\n"
@@ -85,8 +105,26 @@ def main():
     if s["control_bus"]:
         rules += ["iptables -A INPUT -p tcp --dport 9998 -j ACCEPT",
                   "iptables -A INPUT -p tcp --dport 9999 -j ACCEPT"]
-    replace_once(f("usr/sbin/firewall.sh"), "# Allow Spotify Connect\n#TODO\n",
-                 "\n".join(rules) + "\n")
+    fw = f("usr/sbin/firewall.sh")
+    replace_once(fw, "# Allow Spotify Connect\n#TODO\n", "\n".join(rules) + "\n")
+    # Harman's debug flag (from the device certificate) would open SSH and
+    # the bus regardless; the kit's options decide that instead.
+    replace_once(fw, "# This line will be added in debug builds\n#DEBUG=1\n",
+                 "# The kit decides what to open, not the debug flag.\nDEBUG=\n")
+    # Accept replies to the speaker's own connections (DHCP, DNS, time,
+    # AirPlay), then drop everything not allowed above. Without this,
+    # ADB (5555, root without a password) and Libre's services are open
+    # to the network.
+    replace_once(fw, "iptables -I INPUT -i lo -j ACCEPT\n",
+                 "iptables -I INPUT -i lo -j ACCEPT\n"
+                 "iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT\n"
+                 "iptables -A INPUT -p udp --sport 67 --dport 68 -j ACCEPT\n")
+    replace_once(fw, "#iptables -A INPUT -j DROP\n", "iptables -A INPUT -j DROP\n")
+    # Cortana's setup app used these; nothing needs them now, and 443 is
+    # where Libre's unauthenticated setup web server would listen.
+    replace_once(fw, "iptables -A INPUT -p udp --dport 48301 -j ACCEPT\n"
+                     "iptables -A INPUT -p tcp --dport https -j ACCEPT\n"
+                     "iptables -A INPUT -p tcp --dport 12345 -j ACCEPT\n", "")
 
     # Root password.
     shadow = f("etc/shadow")

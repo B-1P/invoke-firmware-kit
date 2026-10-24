@@ -231,13 +231,30 @@ set_result() {  # remembered for the portal: <code> <ssid label>
 }
 
 # ---- firewall ----------------------------------------------------------------------
+# Only what setup needs is opened on the setup network: DHCP, DNS and the
+# portal. HTTPS is refused straight away so phones' captive-portal checks
+# don't wait for a timeout. Everything else (ADB, Libre's services) stays
+# closed on this password-less network.
+fw_rules() {
+    printf '%s\n' "-p udp --dport 67 -j ACCEPT" "-p udp --dport 53 -j ACCEPT" \
+        "-p tcp --dport 53 -j ACCEPT" "-p tcp --dport $PORTAL_PORT -j ACCEPT" \
+        "-p tcp --dport 443 -j REJECT --reject-with tcp-reset"
+}
 fw_open() {
     command -v "$IPTABLES" > /dev/null 2>&1 || return 0
-    "$IPTABLES" -C INPUT -i "$AP_IFACE" -j ACCEPT 2>/dev/null ||
-        "$IPTABLES" -I INPUT -i "$AP_IFACE" -j ACCEPT 2>/dev/null
+    fw_rules | while read -r rule; do
+        # shellcheck disable=SC2086
+        "$IPTABLES" -C INPUT -i "$AP_IFACE" $rule 2>/dev/null ||
+            "$IPTABLES" -I INPUT -i "$AP_IFACE" $rule 2>/dev/null
+    done
 }
 fw_close() {
     command -v "$IPTABLES" > /dev/null 2>&1 || return 0
+    fw_rules | while read -r rule; do
+        # shellcheck disable=SC2086
+        while "$IPTABLES" -D INPUT -i "$AP_IFACE" $rule 2>/dev/null; do :; done
+    done
+    # rule used by earlier versions: everything on the setup network
     while "$IPTABLES" -D INPUT -i "$AP_IFACE" -j ACCEPT 2>/dev/null; do :; done
 }
 
