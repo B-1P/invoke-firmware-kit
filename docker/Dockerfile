@@ -6,6 +6,15 @@
 # every package is downloaded from Ubuntu's archive when you build.
 FROM ubuntu:16.04
 
+RUN native_arch=$(dpkg --print-architecture); \
+    sed -i -E "s,^deb (http://(archive|security)\.ubuntu\.com/ubuntu/?),deb [arch=${native_arch}] \1," /etc/apt/sources.list \
+    && printf '%s\n' \
+              'deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ xenial main restricted universe multiverse' \
+              'deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ xenial-updates main restricted universe multiverse' \
+              'deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ xenial-backports main restricted universe multiverse' \
+              'deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ xenial-security main restricted universe multiverse' \
+    >> /etc/apt/sources.list
+    
 RUN dpkg --add-architecture armhf \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
